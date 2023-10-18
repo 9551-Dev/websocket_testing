@@ -15,9 +15,7 @@ public class CommandHandler {
         server = ws_server;
         data = new HashMap<String,String>();
 
-        list.put("echo",new WSCommand((connection,data) -> {
-            connection.send(server.gson.toJson(data));
-        }));
+        list.put("echo",new WSCommand((connection,data) -> connection.send(server.gson.toJson(data))));
 
         list.put("add_one",new WSCommand((connection,data) -> {
             JsonHelper helper = new JsonHelper(data);
