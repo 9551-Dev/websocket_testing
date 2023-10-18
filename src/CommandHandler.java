@@ -6,14 +6,12 @@ import java.util.HashMap;
 
 public class CommandHandler {
 
-    private final HashMap<String,String> data;
+    private final HashMap<String,StoredElement> database;
     public HashMap<String,WSCommand> list;
-    private final WebsocketHandler server;
 
-    public CommandHandler(WebsocketHandler ws_server) {
-        list = new HashMap<>();
-        server = ws_server;
-        data = new HashMap<String,String>();
+    public CommandHandler(WebsocketHandler server) {
+        this.list = new HashMap<>();
+        this.database = new HashMap<>();
 
         list.put("echo",new WSCommand((connection,data) -> connection.send(server.gson.toJson(data))));
 
@@ -22,9 +20,59 @@ public class CommandHandler {
             int num = helper.get_element("num",JsonElement::getAsInt);
 
             data.addProperty("num",num+1);
-            data.addProperty("reply",true);
 
             connection.send(server.gson.toJson(data));
+        }));
+
+        list.put("write",new WSCommand((connection,data) -> {
+            System.out.println("test");
+            JsonHelper helper = new JsonHelper(data);
+
+            JsonObject response = new JsonObject();
+
+            String auth      = helper.get_element("auth",JsonElement::getAsString);
+            String save_data = helper.get_element("data",JsonElement::getAsString);
+
+            String key = helper.get_element("key",JsonElement::getAsString);
+            if (database.containsKey(key)) {
+                StoredElement existing = database.get(key);
+
+                Boolean success = existing.set_data(save_data,auth);
+                response.addProperty("success",success);
+            } else {
+                StoredElement new_entry = new StoredElement(save_data,auth);
+
+                database.put(key,new_entry);
+
+                response.addProperty("success",true);
+            }
+
+            connection.send(server.gson.toJson(response));
+        }));
+
+        list.put("read",new WSCommand((connection,data) -> {
+            JsonHelper helper   = new JsonHelper(data);
+            JsonObject response = new JsonObject();
+
+            String auth = helper.get_element("auth",JsonElement::getAsString);
+            String key  = helper.get_element("key", JsonElement::getAsString);
+
+            boolean success = false;
+
+            if (database.containsKey(key)) {
+                StoredElement requested = database.get(key);
+
+                String read_result = requested.get_data(auth);
+
+                if (read_result != null) {
+                    success = true;
+                    response.addProperty("data",read_result);
+                }
+            }
+
+            response.addProperty("success",success);
+
+            connection.send(server.gson.toJson(response));
         }));
     }
 
