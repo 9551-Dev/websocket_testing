@@ -8,7 +8,7 @@ import org.java_websocket.server.WebSocketServer;
 import java.net.InetSocketAddress;
 
 public class WebsocketHandler extends WebSocketServer {
-    private final Gson gson;
+    public final Gson gson;
 
     private final CommandHandler command_handler;
 
@@ -47,11 +47,8 @@ public class WebsocketHandler extends WebSocketServer {
                 try {
                     String command_type = command_type_json.getAsString();
 
-                    if (command_handler.list.containsKey(command_type)) {
-                        String response_message = "tmp";
-
-                        conn.send(response_message);
-                        System.out.println("Sent response: " + response_message);
+                    if (command_handler.command_exists(command_type)) {
+                        command_handler.run_command(command_type,conn,message);
                     }
                 } catch (Exception e) {
                     System.out.println("Invalid message: " + message);
