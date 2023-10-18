@@ -25,12 +25,16 @@ public class WebsocketHandler extends WebSocketServer {
 
     @Override
     public void onOpen(WebSocket conn, ClientHandshake handshake) {
-        System.out.println("New connection from " + conn.getRemoteSocketAddress());
+        if (conn != null) {
+            System.out.println("New connection from " + conn.getRemoteSocketAddress());
+        }
     }
 
     @Override
     public void onClose(WebSocket conn, int code, String reason, boolean remote) {
-        System.out.println("Closed connection to " + conn.getRemoteSocketAddress());
+        if (conn != null) {
+            System.out.println("Closed connection to " + conn.getRemoteSocketAddress());
+        }
     }
 
     @Override

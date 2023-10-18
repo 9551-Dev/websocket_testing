@@ -25,7 +25,6 @@ public class CommandHandler {
         }));
 
         list.put("write",new WSCommand((connection,data) -> {
-            System.out.println("test");
             JsonHelper helper = new JsonHelper(data);
 
             JsonObject response = new JsonObject();
