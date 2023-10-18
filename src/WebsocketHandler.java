@@ -21,8 +21,7 @@ public class WebsocketHandler extends WebSocketServer {
     }
 
     @Override
-    public void onStart() {
-    }
+    public void onStart() {}
 
     @Override
     public void onOpen(WebSocket conn, ClientHandshake handshake) {
@@ -48,7 +47,10 @@ public class WebsocketHandler extends WebSocketServer {
                     String command_type = command_type_json.getAsString();
 
                     if (command_handler.command_exists(command_type)) {
-                        command_handler.run_command(command_type,conn,message);
+                        command_handler.run_command(command_type,conn,read_array);
+                    } else {
+                        System.out.println("Invalid command " + command_type);
+                        conn.send("{\"reply\": \"invalid command\"}");
                     }
                 } catch (Exception e) {
                     System.out.println("Invalid message: " + message);

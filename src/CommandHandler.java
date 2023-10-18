@@ -1,22 +1,32 @@
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import org.java_websocket.WebSocket;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 
 public class CommandHandler {
+
+    private final HashMap<String,String> data;
     public HashMap<String,WSCommand> list;
     private final WebsocketHandler server;
 
     public CommandHandler(WebsocketHandler ws_server) {
         list = new HashMap<>();
         server = ws_server;
+        data = new HashMap<String,String>();
 
-        list.put("test",new WSCommand((connection,name) -> {
-            ArrayList<String> load = new ArrayList<>();
+        list.put("echo",new WSCommand((connection,data) -> {
+            connection.send(server.gson.toJson(data));
+        }));
 
-            load.add("Hello world");
+        list.put("add_one",new WSCommand((connection,data) -> {
+            JsonHelper helper = new JsonHelper(data);
+            int num = helper.get_element("num",JsonElement::getAsInt);
 
-            connection.send(server.gson.toJson(load));
+            data.addProperty("num",num+1);
+            data.addProperty("reply",true);
+
+            connection.send(server.gson.toJson(data));
         }));
     }
 
@@ -24,7 +34,7 @@ public class CommandHandler {
         return list.containsKey(name);
     }
 
-    public void run_command(String name,WebSocket connection,String message) {
+    public void run_command(String name, WebSocket connection, JsonObject message) {
         WSCommand command = list.get(name);
 
         command.run(connection,message);
